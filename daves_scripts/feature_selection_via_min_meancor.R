@@ -10,10 +10,6 @@ require(ggplot2)
 require(compiler)
 require(parallel)
 
-load("Signatures_for_Subtyping.rda")
-set1 <- t(set1_1[,-c(1:2)])
-set1spear <- cor(set1, method="spearman")
-
 getSampDist <- function(idx, datCor) {
   # returns the sampling distribution based on the
   # median absolute distance between the selected set,
@@ -88,23 +84,42 @@ multiSel <- function(dat, datCor, reps, iter, k, cores) {
 
 ################################
 # run it a number of times... ##
-soln <- multiSel(set1, set1spear, 100, 1000, 4, 4)
+# on a subsample
+
+
+load("Signatures_for_Subtyping.rda")
+
+dat <- set1_1
+datm <- t(dat[,-c(1:2)])
+reps <- 100
+iters <- 1000
+cores <- 4
+k <- 4
+
+datrcor <- cor(datm, method="spearman")
+idx1 <- sample(1:nrow(datm), size=floor(nrow(datm)/2), replace=F)
+idx2 <- (1:nrow(datm))[-idx1]
+soln1 <- multiSel(datm[idx1,], datrcor, reps, iters, k, cores)
+soln2 <- multiSel(datm[idx2,], datrcor, reps, iters, k, cores)
 
 # what's the solution?
-idx <- as.numeric(names(soln[[1]]))
-print(set1_1[idx, 1:2])
-write.table(set1_1[idx, 1:2], file="feature_selection.txt", quote=F)
+sidx1 <- as.numeric(names(soln1[[1]]))
+sidx2 <- as.numeric(names(soln2[[1]]))
+print(dat[sidx1, 1:2])
+print(dat[sidx2, 1:2])
+write.table(dat[sidx1, 1:2], file="feature_selection_soln1.txt", quote=F)
+write.table(dat[sidx2, 1:2], file="feature_selection_soln2.txt", quote=F)
 
 ################# Plotting ##
-library(pheatmap)
-pdf("selected_correlation_heatmap.pdf")
-pheatmap(set1spear[idx,idx])
-dev.off()
+#library(pheatmap)
+#pdf("selected_correlation_heatmap.pdf")
+#pheatmap(set1spear[idx,idx])
+#dev.off()
 
 # plotting the number of times a feature was selected.
-jdx <- as.numeric(names(soln[[2]]))
-x <- data.frame(set1_1[jdx,c(1,2)], Scores=as.numeric(soln[[2]]))
-pdf("selected_barplot.pdf")
+jdx <- as.numeric(names(soln1[[2]]))
+x <- data.frame(dat[jdx,c(1,2)], Scores=as.numeric(soln1[[2]]))
+pdf("selected_barplot_soln1.pdf")
 ggplot(data=x, aes(x=factor(SetName), y=Scores)) +#
   geom_bar(stat="identity")+
   theme(axis.text.x = element_text(angle = 50, hjust = 1))
