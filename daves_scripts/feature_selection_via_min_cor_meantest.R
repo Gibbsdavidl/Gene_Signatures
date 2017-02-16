@@ -1,8 +1,8 @@
 
 
 # Find representative features by minimizing the within-set #
-# spearman correlation and using sampling distributions     #
-# that are proportional to distance.                        #
+# Pearson correlation and using sampling distributions      #
+# that are proportional to distance (1-corr).               #
 
 # dgibbs@systemsbiology.org
 
@@ -18,7 +18,8 @@ getSampDist <- function(idx, datCor) {
   # returns the sampling distribution based on the
   # median absolute distance between the selected set,
   # and all others
-  meanCorDist <- 1-abs(apply(set1spear[idx,], 2, median))
+#  meanCorDist <- 1-abs(apply(set1spear[idx,], 2, median))
+  meanCorDist <- 1-apply(abs(datCor)[idx,], 2, mean)
   meanCorDist[idx] <- 0
   meanCorDist/sum(meanCorDist)
 }
@@ -30,18 +31,20 @@ checkForImprovement <- function(i, idx, j, datCor, k) {
   # if the newly sampled feature reduced the median,
   # then take it.
   interPtCor <- abs(datCor[idx,idx])
-  medCor <- median(interPtCor[upper.tri(interPtCor)])
-  medCorVec <- apply(interPtCor, 2, median)
+  diag(interPtCor) <- 0
+  avgCor <- mean(interPtCor[upper.tri(interPtCor)])
+  avgCorVec <- apply(interPtCor, 2, mean)
 
   # remove the feature with the highest correlation
-  l <- sample(1:k, size=1, prob=medCorVec/sum(medCorVec))
+  l <- sample(1:k, size=1, prob=avgCorVec/sum(avgCorVec))
 
   jdx <- c(idx[-l], j) # try new index
   newInterPtCor <- abs(datCor[jdx,jdx])
-  newMedCor <- median(newInterPtCor[upper.tri(newInterPtCor)])
+  diag(newInterPtCor) <- 0
+  newAvgCor <- mean(newInterPtCor[upper.tri(newInterPtCor)])
 
   # if we reduced the median correlation, then take it.
-  if (newMedCor < medCor) { idx <- jdx; }
+  if (newAvgCor < avgCor) { idx <- jdx; }
   idx
 }
 checkForImprovementCmp <- cmpfun(checkForImprovement)
@@ -64,7 +67,7 @@ featSel <- function(dat, datCor, iter, k) {
     idx <- checkForImprovementCmp(i, idx, j, datCor, k)
   }
 
-  return(sort(idx))
+  return(idx)
 }
 featSelCmp <- cmpfun(featSel)
 
@@ -85,11 +88,12 @@ multiSel <- function(dat, datCor, reps, iter, k, cores) {
 
 ################################
 # run it a number of times... ##
-soln <- multiSel(set1, set1spear, 100, 1000, 4, 8)
+soln <- multiSel(set1, set1spear, 100, 1000, 4, 4)
 
 # what's the solution?
 idx <- as.numeric(names(soln[[1]]))
 print(set1_1[idx, 1:2])
+write.table(set1_1[idx, 1:2], file="feature_selection.txt", quote=F)
 
 ################# Plotting ##
 library(pheatmap)
