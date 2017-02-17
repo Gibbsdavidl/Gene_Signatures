@@ -1,0 +1,21 @@
+Source SetName
+22 Wolf IL13_score_21050467
+32 Wolf Bcell_21978456
+47 Wolf MCD3_CD8_21214954
+52 Wolf LYMPHS_PCA_16704732
+58 Wolf Buck14_score
+67 Wolf CD8_CD68_ratio
+68 Wolf TAMsurr_TcClassII_ratio
+71 Wolf CD103pos_CD103neg_ratio_25446897
+1 Yasin Angiogenesis
+73 Attractors IFIT3
+2 Yasin APM1
+28 Wolf IL8_21978456
+70 Wolf CSR_Activated_15701700
+11 Wolf PDL1_data
+25 Wolf TREM1_data
+60 Wolf Immune_NSCLC_score
+54 Wolf TGFB_PCA_17349583
+64 Wolf Module11_Prolif_score
+39 Wolf MHC.I_19272155
+37 Wolf Interferon_19272155
